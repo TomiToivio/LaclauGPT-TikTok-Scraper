@@ -15,7 +15,6 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
 
 const app = express();
 const jsonParser = bodyParser.json();
@@ -23,7 +22,13 @@ const corsConfig = { credentials: true, origin: true };
 app.use(cors(corsConfig));
 
 // Initialize SQLite database
-const db = await open({ filename: './tiktok_scraper.sqlite', driver: sqlite3.Database });
+const db = new sqlite3.Database('tiktok_scraper.db', (err) => {
+  if (err) {
+    console.error('Error opening database:', err.message);
+  } else {
+    console.log('Connected to the SQLite database.');
+  }
+}); 
 
 // Create tables if they don't exist
 await db.exec(`CREATE TABLE IF NOT EXISTS tiktok_scraper_videos (
