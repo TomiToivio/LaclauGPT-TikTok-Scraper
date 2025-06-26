@@ -1,0 +1,18 @@
+{
+    "manifest_version": 2,
+    "name": "LaclauGPT TikTok Scraper for EP24 Elections",
+    "version": "1.0",
+    "description": "LaclauGPT TikTok Scraper for EP24 Elections",
+    "permissions": ["downloads","unlimitedStorage","storage","nativeMessaging","webRequest","webRequestBlocking","*://*.tiktok.com/*"],  
+    "content_scripts": [
+      {
+        "matches": ["*://*.tiktok.com/*"],
+        "js": ["content.js"]
+      }
+    ],
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false,
+        "type": "module"
+      }
+  }
