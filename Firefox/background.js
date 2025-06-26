@@ -47,7 +47,7 @@ function listener(details) {
 function post_to_backend(data, endpoint) {
     // Here you need to set your backend URL
     // This is a placeholder, replace with your actual backend URL
-    const api_url = "http://localhost/tiktok/" + endpoint;
+    const api_url = "http://localhost:3000/tiktok/" + endpoint;
     let headers = new Headers();
     headers.append('Accept', 'application/json');
     headers.append('Content-Type', 'application/json');
