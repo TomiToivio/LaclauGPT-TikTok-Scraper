@@ -1,9 +1,12 @@
 {
   "name": "laclaugpt",
   "version": "1.0.0",
-  "description": "Backend API for LaclauGPT TikTok Scraper",
+  "description": "Backend API for the legacy LaclauGPT TikTok Scraper",
   "main": "index.js",
   "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TomiToivio/LaclauGPT-TikTok-Scraper.git"

@@ -10,33 +10,49 @@
  * Released for academic and research documentation.
  */
 
-// Generic promise handlers for storage actions
-function setItem() {
-    // Placeholder for future success logic
-}
+// Configure research targets here. Empty lists are safe: automatic navigation
+// stays idle while passive API collection can still work on pages you visit.
+const SCRAPE_CONFIG = {
+    Global: {
+        searchQueries: [],
+        usernames: [],
+        hashtags: []
+    }
+};
 
 function onError(error) {
-    console.log("Storage error:", error);
+    console.error("Storage error:", error);
 }
 
-// Store specific data items locally
 function setScrapedCountry(country) {
-    browser.storage.local.set({ scrapedCountry: { country } }).then(setItem, onError);
+    browser.storage.local.set({ scrapedCountry: country }).catch(onError);
 }
 
 function setScrapedType(type) {
-    browser.storage.local.set({ scrapedType: { type } }).then(setItem, onError);
+    browser.storage.local.set({ scrapedType: type }).catch(onError);
 }
 
 function setScrapedItem(item) {
-    browser.storage.local.set({ scrapedItem: { item } }).then(setItem, onError);
+    browser.storage.local.set({ scrapedItem: item }).catch(onError);
 }
 
 function setScrapedUrl(url) {
-    browser.storage.local.set({ scrapedUrl: { url } }).then(setItem, onError);
+    browser.storage.local.set({ scrapedUrl: url }).catch(onError);
 }
 
-// Detect current page type and act accordingly
+function pickRandom(items) {
+    if (!Array.isArray(items) || items.length === 0) return null;
+    return items[Math.floor(Math.random() * items.length)];
+}
+
+function hasConfiguredTargets() {
+    return Object.values(SCRAPE_CONFIG).some((config) =>
+        (Array.isArray(config?.searchQueries) && config.searchQueries.length > 0) ||
+        (Array.isArray(config?.usernames) && config.usernames.length > 0) ||
+        (Array.isArray(config?.hashtags) && config.hashtags.length > 0)
+    );
+}
+
 function check_current_page() {
     const url = window.location.href;
     if (url.includes("search") || url.includes("tag") || (url.includes("@") && !url.includes("video"))) {
@@ -46,35 +62,34 @@ function check_current_page() {
     }
 }
 
-// Click a random video link from the page
 function click_random_video() {
     const links = Array.from(document.getElementsByTagName('a'));
-    const videos = links.filter(link => link.href.includes("/video/"));
-    if (!videos.length) {
-        window.location.assign("https://www.tiktok.com/");
-        return;
+    const videos = links.filter((link) => link.href.includes("/video/"));
+    const video = pickRandom(videos);
+    if (video) {
+        video.click();
     }
-    videos[Math.floor(Math.random() * videos.length)].click();
 }
 
-// Random choice between search, hashtag, or user
 function search_or_hashtag_or_user() {
     updateCountry();
-    const r = Math.floor(Math.random() * 3);
-    if (r === 0) searchWait();
-    if (r === 1) go_to_hashtag();
-    if (r === 2) go_to_candidate_page();
+
+    const actions = [];
+    if (candidate_search_queries.length > 0) actions.push(searchWait);
+    if (candidate_hashtags.length > 0) actions.push(go_to_hashtag);
+    if (candidate_usernames.length > 0) actions.push(go_to_candidate_page);
+
+    const action = pickRandom(actions);
+    if (action) {
+        action();
+    }
 }
 
-// Delay-based navigation retry
-function random_wait() {
-    setTimeout(search_or_hashtag_or_user, Math.floor(Math.random() * 60000));
-}
-
-// Navigate to a candidate user profile
 function go_to_candidate_page() {
-    const name = candidate_usernames[Math.floor(Math.random() * candidate_usernames.length)];
-    const url = `https://www.tiktok.com/@${name}${lang_for_url()}`;
+    const name = pickRandom(candidate_usernames);
+    if (!name) return;
+
+    const url = `https://www.tiktok.com/@${encodeURIComponent(name)}${lang_for_url()}`;
     setScrapedCountry(country);
     setScrapedType("user");
     setScrapedItem(name);
@@ -82,56 +97,59 @@ function go_to_candidate_page() {
     window.location.assign(url);
 }
 
-// Search for a political query
 function search_for_political_videos() {
-    const query = candidate_search_queries[Math.floor(Math.random() * candidate_search_queries.length)];
-    const url = `https://www.tiktok.com/search?q=${query.replace(/\s/g, '%20')}`;
+    const query = pickRandom(candidate_search_queries);
+    if (!query) return;
+
+    const url = `https://www.tiktok.com/search?q=${encodeURIComponent(query)}`;
     setScrapedCountry(country);
     setScrapedType("search");
     setScrapedItem(query);
     setScrapedUrl(url);
 
     const input = Array.from(document.getElementsByTagName("input"))
-        .find(i => i.getAttribute("data-e2e") === "search-user-input");
+        .find((element) => element.getAttribute("data-e2e") === "search-user-input");
     const form = Array.from(document.getElementsByTagName("form"))
-        .find(f => f.getAttribute("data-e2e") === "search-box");
+        .find((element) => element.getAttribute("data-e2e") === "search-box");
 
     if (input && form) {
         input.value = query;
         form.submit();
+    } else {
+        window.location.assign(url);
     }
 }
 
-// Navigate to a hashtag feed
 function go_to_hashtag() {
-    const tag = candidate_hashtags[Math.floor(Math.random() * candidate_hashtags.length)];
-    const url = `https://www.tiktok.com/tag/${tag}${lang_for_url()}`;
+    const tag = pickRandom(candidate_hashtags);
+    if (!tag) return;
+
+    const cleanTag = String(tag).replace(/^#/, '');
+    const url = `https://www.tiktok.com/tag/${encodeURIComponent(cleanTag)}${lang_for_url()}`;
     setScrapedCountry(country);
     setScrapedType("hashtag");
-    setScrapedItem(tag);
+    setScrapedItem(cleanTag);
     setScrapedUrl(url);
     window.location.assign(url);
 }
 
-// Scrolls or clicks back depending on the context
 function scrollerMania() {
     const url = window.location.href;
     if (url.includes("search") || url.includes("tag") || (url.includes("@") && !url.includes("video"))) {
         window.scrollTo(0, document.body.scrollHeight);
     } else if (url.includes("@") && url.includes("video")) {
-        const btn = Array.from(document.getElementsByTagName("button"))
-            .find(b => b.getAttribute("data-e2e") === "arrow-left");
-        if (btn) btn.click();
+        const button = Array.from(document.getElementsByTagName("button"))
+            .find((element) => element.getAttribute("data-e2e") === "arrow-left");
+        if (button) button.click();
     }
 }
 
-// Randomly initiates search
 function searchWait() {
-    setInterval(search_for_political_videos, 5000);
+    // One-shot delay. The old setInterval() could create multiple overlapping
+    // search loops every time this action was selected.
+    setTimeout(search_for_political_videos, 5000);
 }
 
-// Language string generation
-// Just leave EP2024 countries here.
 function lang_for_url() {
     const map = {
         "Bulgaria": "bg-BG", "Croatia": "hr-HR", "Finland": "fi-FI",
@@ -142,29 +160,29 @@ function lang_for_url() {
     return `?lang=${map[country] || "en-IE"}`;
 }
 
-// Updates country and sets candidates for scraping
-// Settings used for EP2024 elections are removed.
-// This is awkward on purpose, had to be modified all the time.
-// You need to do something here to use this. Remember: academic and research use only!
 function updateCountry() {
-    const countries = ["Global"];
-    country = countries[Math.floor(Math.random() * countries.length)];
-    // Settings used for EP2024 elections are removed.
-    // You need to do something here to use this. Remember: academic and research use only!
-    candidate_search_queries = [];
-    candidate_usernames = [];
-    candidate_hashtags = [];
+    const countries = Object.keys(SCRAPE_CONFIG);
+    country = pickRandom(countries) || "Global";
+
+    const config = SCRAPE_CONFIG[country] || {};
+    candidate_search_queries = Array.isArray(config.searchQueries) ? config.searchQueries : [];
+    candidate_usernames = Array.isArray(config.usernames) ? config.usernames : [];
+    candidate_hashtags = Array.isArray(config.hashtags) ? config.hashtags : [];
 }
 
-// Global variables for data source per country
-let country = "";
+let country = "Global";
 let candidate_search_queries = [];
 let candidate_usernames = [];
 let candidate_hashtags = [];
 
-// Triggers
-setInterval(scrollerMania, 5000);
-setInterval(() => {
-    scrollerMania();
-    check_current_page();
-}, 10000);
+updateCountry();
+
+if (hasConfiguredTargets()) {
+    setInterval(scrollerMania, 5000);
+    setInterval(() => {
+        scrollerMania();
+        check_current_page();
+    }, 10000);
+} else {
+    console.info("LaclauGPT automatic browsing is idle because SCRAPE_CONFIG has no targets.");
+}
