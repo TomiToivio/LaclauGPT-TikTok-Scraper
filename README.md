@@ -1,6 +1,6 @@
 # LaclauGPT TikTok Scraper
 
-> **Legacy repository:** This repository is preserved for academic research documentation. Active development continues in [LaclauGPT-Discourse-Analysis](https://github.com/TomiToivio/LaclauGPT-Discourse-Analysis).
+> **Legacy repository:** This repository is preserved for academic research documentation. Active development continues in [LaclauGPT](https://github.com/TomiToivio/LaclauGPT).
 
 Legacy Firefox + Node.js research scraper from the LaclauGPT project.
 
