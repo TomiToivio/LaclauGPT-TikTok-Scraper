@@ -61,3 +61,25 @@ The original collection covered TikTok and Instagram material related to electio
 
 Author: Tomi Toivio  
 License: CC0 1.0 Universal
+
+
+## Development standards
+
+The legacy implementation now has a small modern quality layer around both components.
+
+- Node.js 20+ is declared in `.nvmrc` and `package.json`.
+- ESLint checks both the Express backend and Firefox extension JavaScript.
+- Prettier checks JavaScript, JSON, and Markdown formatting.
+- Mozilla `web-ext lint` validates the Firefox WebExtension manifest and extension files.
+- GitHub Actions runs the same checks on pull requests and pushes to `main`.
+- Dependabot monitors npm dependencies under `Node/`.
+- `.editorconfig` keeps UTF-8, LF line endings, final newlines, and two-space JS/JSON indentation consistent.
+
+From `Node/`, install dependencies and run the complete quality gate:
+
+```bash
+npm ci
+npm run check
+```
+
+These standards intentionally wrap the existing 2024 scraper rather than converting it to TypeScript, Manifest V3, a monorepo framework, or a new application architecture. Those would be functional migrations rather than repository standardization.
