@@ -1,0 +1,40 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  node-and-extension:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Node
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: Node/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Node syntax
+        run: npm run check:syntax
+
+      - name: Lint JavaScript
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Validate Firefox extension
+        run: npm run webext:lint
