@@ -1,0 +1,5 @@
+Node/node_modules/
+Node/*.db
+Node/*.db-*
+coverage/
+web-ext-artifacts/
