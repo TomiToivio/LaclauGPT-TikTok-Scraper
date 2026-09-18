@@ -5,7 +5,14 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "check:syntax": "node --check index.js",
+    "lint": "eslint index.js ../Firefox/*.js",
+    "lint:fix": "eslint index.js ../Firefox/*.js --fix",
+    "format": "prettier --write index.js package.json ../Firefox/*.js ../Firefox/manifest.json ../README.md",
+    "format:check": "prettier --check index.js package.json ../Firefox/*.js ../Firefox/manifest.json ../README.md",
+    "webext:lint": "web-ext lint --source-dir ../Firefox",
+    "check": "npm run check:syntax && npm run lint && npm run format:check && npm run webext:lint"
   },
   "repository": {
     "type": "git",
@@ -28,5 +35,16 @@
     "cors": "^2.8.5",
     "express": "^5.2.0",
     "sqlite3": "^6.0.1"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "eslint": "^9.35.0",
+    "globals": "^16.3.0",
+    "prettier": "^3.6.2",
+    "web-ext": "^8.9.0"
   }
 }
